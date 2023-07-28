@@ -1,19 +1,20 @@
 #!/usr/bin/python3
 
 import datetime
-import subprocess
 import os.path
-import urllib.request
 import re
+import subprocess
+import urllib.request
 
-iptv_link="http://tr.hdiptv.pw:8080/get.php?username=sfo37aqtki&password=8e3kspnfxc&type=m3u_plus&output=ts"
-iptv_file="/tmp/tv_channels_sfo37aqtki_plus.m3u"
+iptv_link = "http://tr.hdiptv.pw:8080/get.php?username=sfo37aqtki&password=8e3kspnfxc&type=m3u_plus&output=ts"
+iptv_file = "/tmp/tv_channels_sfo37aqtki_plus.m3u"
 
-working_dir="/home/pi/iptv_recorder"
-start_croncmd=f"{working_dir}/start_recording.sh >> {working_dir}/record.log 2>&1"
-end_croncmd=f"{working_dir}/finish_recording.sh >> {working_dir}/record.log 2>&1"
+working_dir = "/home/pi/iptv_recorder"
+start_croncmd = f"{working_dir}/start_recording.sh >> {working_dir}/record.log 2>&1"
+end_croncmd = f"{working_dir}/finish_recording.sh >> {working_dir}/record.log 2>&1"
 
-weekDays = ("monday","tuesday","wednesday","thursday","friday","saturday","sunday")
+weekDays = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+
 
 def get_date(day_option):
     today = datetime.datetime.now().date()
@@ -29,12 +30,15 @@ def get_date(day_option):
 
     return target_date
 
+
 def get_time(time_option):
     target_time = datetime.datetime.strptime(time_option, '%H:%M')
     return target_time
 
+
 def datetime_to_cron(target_time, target_date):
     return f"{target_time.minute} {target_time.hour} {target_date.day} {target_date.month} *"
+
 
 def main():
     start_time = input("Enter start time for recording (format: HH:MM): ")
@@ -64,9 +68,12 @@ def main():
 
     add_cron(datetime_to_cron(start_time, start_date), datetime_to_cron(end_time, end_date), channel_name, channel_url)
 
-    msg = f"Scheduled for '{channel_name}' between {start_date.strftime('%Y-%m-%d')} at {start_time.strftime('%H:%M')} and {end_date.strftime('%Y-%m-%d')} at {end_time.strftime('%H:%M')}."
+    msg = f"Scheduled for '{channel_name}' between " \
+          f"{start_date.strftime('%Y-%m-%d')} at {start_time.strftime('%H:%M')} and " \
+          f"{end_date.strftime('%Y-%m-%d')} at {end_time.strftime('%H:%M')}."
     subprocess.run(f"echo $(date +%Y-%m-%d-%H-%M-%S)' - {msg}' >> {working_dir}/cron.log", shell=True)
     print(msg)
+
 
 def find_line_above(channel_name, filename):
     with open(filename, 'r') as file:
@@ -77,6 +84,7 @@ def find_line_above(channel_name, filename):
             return lines[index + 1].strip()
     return None
 
+
 def find_name_iptv(channel_name, filename):
     with open(filename, 'r') as file:
         lines = file.readlines()
@@ -85,6 +93,7 @@ def find_name_iptv(channel_name, filename):
         if channel_name.lower() in line.lower():
             result = re.search(r"tvg-name=\"([^\"]*)\"", line)
             return result.group(1).replace(":", "-").replace("(", "").replace(")", "").replace("TR-", "")
+
 
 def get_channel_info(channel_name):
     if not os.path.isfile(iptv_file):
@@ -96,18 +105,31 @@ def get_channel_info(channel_name):
 
     return found_channel_name, channel_url
 
+
 def download(link, filename):
     opener = urllib.request.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
     urllib.request.install_opener(opener)
     urllib.request.urlretrieve(link, filename)
 
+
 def add_cron(start_cron_expression, end_cron_expression, channel_name, channel_url):
-    start_cronjob=f"{start_cron_expression} START_DATE=\"{start_cron_expression}\" FINISH_DATE=\"{end_cron_expression}\" CHANNEL_NAME=\"{channel_name}\" CHANNEL_URL=\"{channel_url}\" {start_croncmd}"
-    end_cronjob=f"{end_cron_expression} START_DATE=\"{start_cron_expression}\" FINISH_DATE=\"{end_cron_expression}\" CHANNEL_NAME=\"{channel_name}\" CHANNEL_URL=\"{channel_url}\" {end_croncmd}"
+    start_cronjob = f"{start_cron_expression} " \
+                    f"START_DATE=\"{start_cron_expression}\" " \
+                    f"FINISH_DATE=\"{end_cron_expression}\" " \
+                    f"CHANNEL_NAME=\"{channel_name}\" " \
+                    f"CHANNEL_URL=\"{channel_url}\" " \
+                    f"{start_croncmd}"
+    end_cronjob = f"{end_cron_expression} " \
+                  f"START_DATE=\"{start_cron_expression}\" " \
+                  f"FINISH_DATE=\"{end_cron_expression}\" " \
+                  f"CHANNEL_NAME=\"{channel_name}\" " \
+                  f"CHANNEL_URL=\"{channel_url}\" " \
+                  f"{end_croncmd}"
 
     subprocess.run(f"(crontab -l; echo '{start_cronjob}') | crontab -", shell=True)
     subprocess.run(f"(crontab -l; echo '{end_cronjob}') | crontab -", shell=True)
+
 
 if __name__ == '__main__':
     main()
