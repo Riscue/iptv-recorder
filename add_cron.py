@@ -6,7 +6,7 @@ import re
 import subprocess
 import urllib.request
 
-iptv_link = "http://tr.hdiptv.pw:8080/get.php?username=sfo37aqtki&password=8e3kspnfxc&type=m3u_plus&output=ts"
+iptv_link = "https://riscue.xyz/iptv.php"
 iptv_file = "/tmp/tv_channels_sfo37aqtki_plus.m3u"
 
 working_dir = "/home/pi/iptv_recorder"
