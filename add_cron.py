@@ -72,6 +72,7 @@ def main():
     msg = f"Scheduled for '{channel_name}' between " \
           f"{start_date.strftime('%Y-%m-%d')} at {start_time.strftime('%H:%M')} and " \
           f"{end_date.strftime('%Y-%m-%d')} at {end_time.strftime('%H:%M')}."
+    subprocess.run(f"mkdir -p {log_dir}", shell=True)
     subprocess.run(f"echo $(date +%Y-%m-%d-%H-%M-%S)' - {msg}' >> {log_dir}/cron.log", shell=True)
     print(msg)
 
