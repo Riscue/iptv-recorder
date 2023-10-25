@@ -9,9 +9,10 @@ import urllib.request
 iptv_link = "https://riscue.xyz/iptv.php"
 iptv_file = "/tmp/tv_channels_sfo37aqtki_plus.m3u"
 
-working_dir = "/home/pi/iptv_recorder"
-start_croncmd = f"{working_dir}/start_recording.sh >> {working_dir}/record.log 2>&1"
-end_croncmd = f"{working_dir}/finish_recording.sh >> {working_dir}/record.log 2>&1"
+working_dir = "/home/pi/raspberry.pi/services/iptv-recorder"
+log_dir = "/var/log/iptv-recorder"
+start_croncmd = f"{working_dir}/start_recording.sh >> {log_dir}/record.log 2>&1"
+end_croncmd = f"{working_dir}/finish_recording.sh >> {log_dir}/record.log 2>&1"
 
 weekDays = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
@@ -71,7 +72,7 @@ def main():
     msg = f"Scheduled for '{channel_name}' between " \
           f"{start_date.strftime('%Y-%m-%d')} at {start_time.strftime('%H:%M')} and " \
           f"{end_date.strftime('%Y-%m-%d')} at {end_time.strftime('%H:%M')}."
-    subprocess.run(f"echo $(date +%Y-%m-%d-%H-%M-%S)' - {msg}' >> {working_dir}/cron.log", shell=True)
+    subprocess.run(f"echo $(date +%Y-%m-%d-%H-%M-%S)' - {msg}' >> {log_dir}/cron.log", shell=True)
     print(msg)
 
 
