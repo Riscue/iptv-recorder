@@ -10,11 +10,15 @@ module.exports = class DbController {
         return await db.delete(`/${this.JOB_TABLE}`);
     }
 
-    static async insertJob(channelName, channelUrl, startDate, endDate) {
-        return await db.push(`/${this.JOB_TABLE}[]`, {channelName, channelUrl, startDate, endDate});
+    static async insertJob(job) {
+        return await db.push(`/${this.JOB_TABLE}[]`, job);
     }
 
     static async getJobs() {
-        return await db.getData(`/${this.JOB_TABLE}`);
+        try {
+            return await db.getData(`/${this.JOB_TABLE}`);
+        } catch (e) {
+            return [];
+        }
     }
 }
