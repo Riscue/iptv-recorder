@@ -1,6 +1,6 @@
 const DB = require('node-json-db');
 
-const db = new DB.JsonDB(new DB.Config("myDataBase", true, false, '/'));
+const db = new DB.JsonDB(new DB.Config("/tmp/db", true, false, '/'));
 
 module.exports = class DbController {
 

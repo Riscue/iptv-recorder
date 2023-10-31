@@ -10,14 +10,14 @@ html(lang='en')
     else
       p Not recording.
 
-    form(action='/add_movie', method='POST')
-    p Title:
-      input(type='text', name='title', value='')
-    p Year:
-      input(type='text', name='year', value='')
-    p Imdb:
-      input(type='text', name='imdb', value='')
-    input(type='submit', value='Submit')
+    form(onsubmit="return postForm()")
+      p Title:
+        input(type='text', name='title', value='')
+      p Year:
+        input(type='text', name='year', value='')
+      p Imdb:
+        input(type='text', name='imdb', value='')
+      input(type='submit', value='Submit')
 
     table.table.table-striped
       tr
@@ -30,3 +30,8 @@ html(lang='en')
           td= job.channelName
           td= job.startDate
           td= job.endDate
+script.
+    function postForm() {
+      console.log("test");
+      return false;
+    }
