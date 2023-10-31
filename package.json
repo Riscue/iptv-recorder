@@ -1,0 +1,17 @@
+{
+  "name": "iptv-recording-service",
+  "version": "1.0.0",
+  "description": "A simple Node.js application to manage and display ffmpeg recording status with an HTML interface.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "author": "Riscue",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "is-running": "^2.1.0",
+    "moment": "^2.29.4",
+    "node-json-db": "^2.3.0"
+  }
+}
