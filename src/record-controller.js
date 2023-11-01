@@ -2,36 +2,38 @@ const {exec} = require('child_process');
 const isRunning = require('is-running');
 
 const LogController = require("./log-controller");
+const DbController = require("./db-controller");
 
 module.exports = class RecordController {
 
     static isRecording = false;
-    static recordingProcess;
+    static recordProcess;
+    static job;
 
-    static startRecording(inputStreamUrl, outputFileName) {
+    static start() {
         if (!this.isRecording) {
-            const ffmpegCommand = `ffmpeg -i ${inputStreamUrl} ${outputFileName}`;
+            const ffmpegCommand = `ffmpeg -i ${RecordController.job.inputStreamUrl} ${RecordController.job.outputFileName}`;
             LogController.info("RECORD", "START");
-            this.recordingProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
+            this.recordProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
                 this.isRecording = false;
                 if (error) {
-                    LogController.error("RECORD", "ERROR", error.message);
+                    DbController.updateJob(RecordController.job.id, {...DbController.getJob(RecordController.job.id), record: "ERROR", log: error.message});
                     return;
                 }
                 if (stderr) {
-                    LogController.error("RECORD", "STDERR", stderr);
+                    DbController.updateJob(RecordController.job.id, {...DbController.getJob(RecordController.job.id), record: "STDERR", log: stderr});
                     return;
                 }
-                LogController.info("RECORD", "FINISH", {log: stdout});
+                DbController.updateJob(RecordController.job.id, {...DbController.getJob(RecordController.job.id), record: "FINISH", log: stdout});
             });
             this.isRecording = true;
         }
     };
 
-    static stopRecording() {
+    static stop() {
         if (this.isRecording) {
-            if (this.recordingProcess && isRunning(this.recordingProcess.pid)) {
-                process.kill(this.recordingProcess.pid, 'SIGTERM');
+            if (this.recordProcess && isRunning(this.recordProcess.pid)) {
+                process.kill(this.recordProcess.pid, 'SIGTERM');
             }
             LogController.info("RECORD", "STOPPED");
             this.isRecording = false;
@@ -39,13 +41,6 @@ module.exports = class RecordController {
     };
 
     static isRunning() {
-        return this.isRecording && this.recordingProcess && isRunning(this.recordingProcess.pid);
+        return this.isRecording && this.recordProcess && isRunning(this.recordProcess.pid);
     }
-
-    static checkIfRecordingIsRunning() {
-        if (this.isRecording && this.recordingProcess && !isRunning()) {
-            LogController.error("RECORD", "UNEXPECTED");
-            this.isRecording = false;
-        }
-    };
 }

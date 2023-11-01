@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const ViewController = require("./view-controller");
 const RestController = require("./rest-controller");
 const LogController = require("./log-controller");
+const JobController = require("./job-controller");
+
+JobController.registerJobs();
 
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));

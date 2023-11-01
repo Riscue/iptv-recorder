@@ -1,5 +1,6 @@
 const DbController = require("./db-controller");
 const LogController = require("./log-controller");
+const moment = require("moment/moment");
 
 module.exports = class RestController {
 
@@ -8,17 +9,20 @@ module.exports = class RestController {
     }
 
     static async addJob(req, res) {
+        if (!req.body.channelName || !req.body.startDate || !req.body.endDate) {
+            res.redirect("/");
+            return;
+        }
+
         const job = {
             channelName: req.body.channelName,
-            startDate: req.body.startDate,
-            endDate: req.body.endDate,
+            startTimestamp: moment(req.body.startDate),
+            endTimestamp: moment(req.body.endDate),
             status: false
         }
 
-        if (!!job.channelName && !!job.startDate && !!job.endDate) {
-            await DbController.insertJob(job);
-            LogController.info("JOB", "ADD", job);
-        }
+        await DbController.insertJob(job);
+        LogController.info("JOB", "ADD", job);
         res.redirect("/");
     }
 

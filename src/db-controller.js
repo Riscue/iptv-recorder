@@ -11,6 +11,10 @@ module.exports = class DbController {
         return await db.delete(`/${this.JOB_TABLE}`);
     }
 
+    static async getJob(id) {
+        return await db.getData(`/${this.JOB_TABLE}[${await db.getIndex(`/${this.JOB_TABLE}`, id)}]`);
+    }
+
     static async deleteJob(id) {
         return await db.delete(`/${this.JOB_TABLE}[${await db.getIndex(`/${this.JOB_TABLE}`, id)}]`);
     }
@@ -20,9 +24,17 @@ module.exports = class DbController {
         return await db.push(`/${this.JOB_TABLE}[]`, job);
     }
 
+    static async updateJob(id, job) {
+        return await db.push(`/${this.JOB_TABLE}[${await db.getIndex(`/${this.JOB_TABLE}`, id)}]`, job, true);
+    }
+
     static async getJobs() {
+        return await db.getObjectDefault(`/${this.JOB_TABLE}`, []);
+    }
+
+    static async getUnrecordedJobs() {
         try {
-            return await db.getData(`/${this.JOB_TABLE}`);
+            return await db.filter(`/${this.JOB_TABLE}`, (entry) => entry.status === false);
         } catch (e) {
             return [];
         }

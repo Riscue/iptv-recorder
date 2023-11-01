@@ -1,21 +1,50 @@
 const moment = require('moment/moment');
 
 const RecordController = require("./record-controller");
+const LogController = require("./log-controller");
+const DbController = require("./db-controller");
 
 module.exports = class JobController {
 
-    static checkTimeAndAct(startTime, endTime) {
-        const now = moment().format("HH:mm");
-        if (now === startTime) {
-            RecordController.startRecording("https://cdn.flowplayer.com/a30bd6bc-f98b-47bc-abf5-97633d4faea0/hls/de3f6ca7-2db3-4689-8160-0f574a5996ad/playlist.m3u8", "output_file.mp4");
+    static registerJobs() {
+        setInterval(JobController.checkTimeAndAct, 10 * 1000);
+        setInterval(JobController.checkRecordStatus, 1000);
+    }
+
+    static async checkTimeAndAct() {
+        if (RecordController.isRecording && RecordController.recordProcess) {
+            return;
         }
-        if (now === endTime) {
-            RecordController.stopRecording();
+
+        LogController.info("JOB", "CHECK");
+
+        const jobs = await DbController.getUnrecordedJobs();
+        if (jobs.length === 0) {
+            return;
+        }
+
+        const job = jobs.sort((a, b) => a.startTimestamp - b.endTimestamp)[0];
+
+        const now = new Date();
+        if (now > job.startTimestamp) {
+            job.status = true;
+            await DbController.updateJob(job.id, job);
+            RecordController.job = job;
+            RecordController.start();
         }
     }
 
-    static registerJobs(startTime, endTime) {
-        setInterval(JobController.checkTimeAndAct, 1000, startTime, endTime);
-        setInterval(RecordController.checkIfRecordingIsRunning, 5000);
+    static checkRecordStatus() {
+        if (RecordController.isRecording && RecordController.recordProcess) {
+            if (RecordController.isRunning()) {
+                const now = moment().format("HH:mm");
+                if (now > RecordController.job.endDate) {
+                    RecordController.stop();
+                }
+            } else {
+                LogController.error("RECORD", "UNEXPECTED");
+                RecordController.isRecording = false;
+            }
+        }
     }
 }

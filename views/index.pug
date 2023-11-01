@@ -43,8 +43,8 @@ html(lang='en')
             each job in jobs
                 tr
                     td= job.channelName
-                    td= job.startDate
-                    td= job.endDate
+                    td= new Date(job.startTimestamp).toLocaleString("tr-TR", {hour: "numeric", minute: "numeric", day: "numeric", month: "numeric", year: "numeric"})
+                    td= new Date(job.endTimestamp).toLocaleString("tr-TR", {hour: "numeric", minute: "numeric", day: "numeric", month: "numeric", year: "numeric"})
                     td= job.status
                     td
                       form(action="/deleteJob", method="POST")
@@ -64,10 +64,11 @@ script.
     const endDate = document.querySelector('input#endDate');
 
     const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset() + 10);
-    startDate.min = now.toISOString().slice(0, -8);
-    startDate.value = now.toISOString().slice(0, -8);
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    startDate.min = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
+    endDate.min = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
 
+    now.setMinutes(now.getMinutes() + 10);
+    startDate.value = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
     now.setMinutes(now.getMinutes() + 120);
-    endDate.min = now.toISOString().slice(0, -8);
-    endDate.value = now.toISOString().slice(0, -8);
+    endDate.value = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
