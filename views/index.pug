@@ -38,6 +38,8 @@ html(lang='en')
                 th Start Date
                 th End Date
                 th Status
+                th Record Status
+                th Log
                 th
 
             each job in jobs
@@ -46,6 +48,8 @@ html(lang='en')
                     td= new Date(job.startTimestamp).toLocaleString("tr-TR", {hour: "numeric", minute: "numeric", day: "numeric", month: "numeric", year: "numeric"})
                     td= new Date(job.endTimestamp).toLocaleString("tr-TR", {hour: "numeric", minute: "numeric", day: "numeric", month: "numeric", year: "numeric"})
                     td= job.status
+                    td= job.record
+                    td= job.log
                     td
                       form(action="/deleteJob", method="POST")
                         input(name="id", type="hidden", value=job.id)

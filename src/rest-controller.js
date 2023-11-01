@@ -1,6 +1,9 @@
+const moment = require("moment/moment");
+
 const DbController = require("./db-controller");
 const LogController = require("./log-controller");
-const moment = require("moment/moment");
+const M3U8Controller = require("./m3u8-controller");
+const {downloadFolder} = require("./contants");
 
 module.exports = class RestController {
 
@@ -14,8 +17,15 @@ module.exports = class RestController {
             return;
         }
 
+        const m3u8 = M3U8Controller.find(req.body.channelName);
+        if (!m3u8) {
+            return;
+        }
+
         const job = {
-            channelName: req.body.channelName,
+            channelName: m3u8.inf.title,
+            channelUrl: m3u8.url,
+            fileName: RestController.getFileName(m3u8),
             startTimestamp: moment(req.body.startDate),
             endTimestamp: moment(req.body.endDate),
             status: false
@@ -24,6 +34,10 @@ module.exports = class RestController {
         await DbController.insertJob(job);
         LogController.info("JOB", "ADD", job);
         res.redirect("/");
+    }
+
+    static getFileName(m3u8) {
+        return `${downloadFolder}/${m3u8.inf.title.trim().replace(/[ \/\\:]+/g, '-')}-${moment(new Date()).format('yyyy-MM-DD-HH-mm')}.mp4`;
     }
 
     static async deleteJob(req, res) {

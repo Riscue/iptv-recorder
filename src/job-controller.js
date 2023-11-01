@@ -16,8 +16,6 @@ module.exports = class JobController {
             return;
         }
 
-        LogController.info("JOB", "CHECK");
-
         const jobs = await DbController.getUnrecordedJobs();
         if (jobs.length === 0) {
             return;

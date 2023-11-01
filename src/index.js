@@ -5,6 +5,9 @@ const ViewController = require("./view-controller");
 const RestController = require("./rest-controller");
 const LogController = require("./log-controller");
 const JobController = require("./job-controller");
+const M3U8Controller = require("./m3u8-controller");
+
+M3U8Controller.prepare();
 
 JobController.registerJobs();
 

@@ -12,19 +12,33 @@ module.exports = class RecordController {
 
     static start() {
         if (!this.isRecording) {
-            const ffmpegCommand = `ffmpeg -i ${RecordController.job.inputStreamUrl} ${RecordController.job.outputFileName}`;
+            const ffmpegCommand = `ffmpeg -i "${RecordController.job.channelUrl}" -c copy "${RecordController.job.fileName}"`;
             LogController.info("RECORD", "START");
-            this.recordProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
+            this.recordProcess = exec(ffmpegCommand, async (error, stdout, stderr) => {
                 this.isRecording = false;
                 if (error) {
-                    DbController.updateJob(RecordController.job.id, {...DbController.getJob(RecordController.job.id), record: "ERROR", log: error.message});
+                    await DbController.updateJob(RecordController.job.id, {
+                        ...await DbController.getJob(RecordController.job.id),
+                        record: "ERROR", log: error.message
+                    });
+                    LogController.error("RECORD", "ERROR");
                     return;
                 }
                 if (stderr) {
-                    DbController.updateJob(RecordController.job.id, {...DbController.getJob(RecordController.job.id), record: "STDERR", log: stderr});
+                    await DbController.updateJob(RecordController.job.id, {
+                        ...await DbController.getJob(RecordController.job.id),
+                        record: "STDERR",
+                        log: stderr
+                    });
+                    LogController.error("RECORD", "STDERR");
                     return;
                 }
-                DbController.updateJob(RecordController.job.id, {...DbController.getJob(RecordController.job.id), record: "FINISH", log: stdout});
+                await DbController.updateJob(RecordController.job.id, {
+                    ...await DbController.getJob(RecordController.job.id),
+                    record: "FINISH",
+                    log: stdout
+                });
+                LogController.info("RECORD", "FINISH");
             });
             this.isRecording = true;
         }
