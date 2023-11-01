@@ -5,6 +5,6 @@ module.exports = class LogController {
     }
 
     static error(entity, action, errorLog) {
-        console.error(JSON.stringify({entity, action, severity: "error"}));
+        console.error(JSON.stringify({timestamp: new Date(), entity, action, severity: "error"}));
     }
 }
