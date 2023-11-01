@@ -1,7 +1,8 @@
 const DB = require('node-json-db');
 const hash = require('object-hash');
+const {dbFile} = require("./contants");
 
-const db = new DB.JsonDB(new DB.Config("/tmp/db", true, false, '/'));
+const db = new DB.JsonDB(new DB.Config(dbFile, true, false, '/'));
 
 module.exports = class DbController {
 
