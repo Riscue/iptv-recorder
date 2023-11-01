@@ -1,11 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const process = require('process')
 
 const ViewController = require("./view-controller");
 const RestController = require("./rest-controller");
 const LogController = require("./log-controller");
 const JobController = require("./job-controller");
 const M3U8Controller = require("./m3u8-controller");
+
+const signals = ["SIGTERM", "SIGINT"];
+const shutdown = async (signal) => {
+    console.log(`Got signal: ${signal}`);
+    process.exit(0);
+};
+signals.forEach((signal) => {
+    process.on(signal, shutdown);
+});
 
 M3U8Controller.prepare();
 

@@ -17,6 +17,7 @@
     "moment": "^2.29.4",
     "node-json-db": "^2.3.0",
     "object-hash": "^3.0.0",
+    "process": "^0.11.10",
     "pug": "^3.0.2"
   }
 }
