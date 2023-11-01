@@ -1,37 +1,73 @@
 doctype html
 
 html(lang='en')
-  head
-    title= title
-  body
-    h1 Recording Status
-    if status
-      p Recording is ongoing.
-    else
-      p Not recording.
+    head
+        title= title
+    body
+        h1 Recording Status
+        if status
+            p Recording is ongoing.
+        else
+            p Not recording.
 
-    form(onsubmit="return postForm()")
-      p Title:
-        input(type='text', name='title', value='')
-      p Year:
-        input(type='text', name='year', value='')
-      p Imdb:
-        input(type='text', name='imdb', value='')
-      input(type='submit', value='Submit')
+        form(action="/addJob", method="POST")
+            table.table
+                tr
+                    th
+                        p Channel Name:
+                    th
+                        input(id='channelName', name='channelName', type='text', style="width: 100%;")
+                tr
+                    th
+                        p Start Date:
+                    th
+                        input(id='startDate', name='startDate', type='datetime-local', style="width: 100%;")
+                tr
+                    th
+                        p End Date:
+                    th
+                        input(id='endDate', name='endDate', type='datetime-local', style="width: 100%;")
+                tr
+                    th
+                    th
+                        input(type='submit', value='Kaydet')
 
-    table.table.table-striped
-      tr
-        th Channel Name
-        th Start Date
-        th End Date
+        table.table.table-striped
+            tr
+                th Channel Name
+                th Start Date
+                th End Date
+                th Status
+                th
 
-      each job in jobs
-        tr
-          td= job.channelName
-          td= job.startDate
-          td= job.endDate
-script.
-    function postForm() {
-      console.log("test");
-      return false;
+            each job in jobs
+                tr
+                    td= job.channelName
+                    td= job.startDate
+                    td= job.endDate
+                    td= job.status
+                    td
+                      form(action="/deleteJob", method="POST")
+                        input(name="id", type="hidden", value=job.id)
+                        input(type="submit", value='Sil')
+
+    form(action="/clearJobs", method="POST")
+          input(type="submit", value='Hepsini temizle')
+
+style.
+    th {
+        text-align: left;
     }
+
+script.
+    const startDate = document.querySelector('input#startDate');
+    const endDate = document.querySelector('input#endDate');
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset() + 10);
+    startDate.min = now.toISOString().slice(0, -8);
+    startDate.value = now.toISOString().slice(0, -8);
+
+    now.setMinutes(now.getMinutes() + 120);
+    endDate.min = now.toISOString().slice(0, -8);
+    endDate.value = now.toISOString().slice(0, -8);
