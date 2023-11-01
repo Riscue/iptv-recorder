@@ -1,6 +1,8 @@
 const {exec} = require('child_process');
 const isRunning = require('is-running');
 
+const LogController = require("./log-controller");
+
 module.exports = class RecordController {
 
     static isRecording = false;
@@ -9,18 +11,18 @@ module.exports = class RecordController {
     static startRecording(inputStreamUrl, outputFileName) {
         if (!this.isRecording) {
             const ffmpegCommand = `ffmpeg -i ${inputStreamUrl} ${outputFileName}`;
-            console.log("Recording started.");
+            LogController.info("RECORD", "START");
             this.recordingProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
                 this.isRecording = false;
                 if (error) {
-                    console.error(`Hata oluştu: ${error.message}`);
+                    LogController.error("RECORD", "ERROR", error.message);
                     return;
                 }
                 if (stderr) {
-                    console.error(`Stderr: ${stderr}`);
+                    LogController.error("RECORD", "STDERR", stderr);
                     return;
                 }
-                console.log(`stdout: ${stdout}`);
+                LogController.info("RECORD", "FINISH", {log: stdout});
             });
             this.isRecording = true;
         }
@@ -28,11 +30,10 @@ module.exports = class RecordController {
 
     static stopRecording() {
         if (this.isRecording) {
-            console.log("Recording stopped.");
             if (this.recordingProcess && isRunning(this.recordingProcess.pid)) {
-                // ffmpeg işlemini sonlandır
                 process.kill(this.recordingProcess.pid, 'SIGTERM');
             }
+            LogController.info("RECORD", "STOPPED");
             this.isRecording = false;
         }
     };
@@ -43,7 +44,7 @@ module.exports = class RecordController {
 
     static checkIfRecordingIsRunning() {
         if (this.isRecording && this.recordingProcess && !isRunning()) {
-            console.log("Recording stopped unexpectedly.");
+            LogController.error("RECORD", "UNEXPECTED");
             this.isRecording = false;
         }
     };

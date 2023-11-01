@@ -1,4 +1,5 @@
 const DbController = require("./db-controller");
+const LogController = require("./log-controller");
 
 module.exports = class RestController {
 
@@ -16,20 +17,20 @@ module.exports = class RestController {
 
         if (!!job.channelName && !!job.startDate && !!job.endDate) {
             await DbController.insertJob(job);
-            console.log(JSON.stringify({entity: "JOB", action: "ADD", job}))
+            LogController.info("JOB", "ADD", job);
         }
         res.redirect("/");
     }
 
     static async deleteJob(req, res) {
         await DbController.deleteJob(req.body.id);
-        console.log(JSON.stringify({entity: "JOB", action: "DELETE", id: req.body.id}))
+        LogController.info("JOB", "DELETE", {id: req.body.id});
         res.redirect("/");
     }
 
     static async clearJobs(req, res) {
         await DbController.clearJobs();
-        console.log(JSON.stringify({entity: "JOB", action: "DELETE_ALL"}))
+        LogController.info("JOB", "DELETE_ALL");
         res.redirect("/");
     }
 }
