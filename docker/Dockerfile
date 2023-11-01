@@ -10,4 +10,4 @@ COPY ./views ./views
 
 EXPOSE 3000
 
-CMD ["/bin/sh", "-c", "node /app/src/index.js"]
+CMD ["node", "/app/src/index.js"]
