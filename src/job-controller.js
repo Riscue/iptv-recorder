@@ -35,13 +35,14 @@ module.exports = class JobController {
     static checkRecordStatus() {
         if (RecordController.isRecording && RecordController.recordProcess) {
             if (RecordController.isRunning()) {
-                const now = moment().format("HH:mm");
+                const now = new Date();
                 if (now > RecordController.job.endDate) {
                     RecordController.stop();
                 }
             } else {
                 LogController.error("RECORD", "UNEXPECTED");
                 RecordController.isRecording = false;
+                RecordController.recordProcess = undefined;
             }
         }
     }

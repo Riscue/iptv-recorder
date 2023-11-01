@@ -3,11 +3,13 @@ const moment = require("moment/moment");
 const DbController = require("./db-controller");
 const LogController = require("./log-controller");
 const M3U8Controller = require("./m3u8-controller");
+const RecordController = require("./record-controller");
 const {downloadFolder} = require("./contants");
 
 module.exports = class RestController {
 
     static async stop(req, res) {
+        RecordController.stop();
         res.redirect("/");
     }
 
@@ -19,6 +21,7 @@ module.exports = class RestController {
 
         const m3u8 = M3U8Controller.find(req.body.channelName);
         if (!m3u8) {
+            res.redirect("/");
             return;
         }
 

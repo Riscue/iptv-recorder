@@ -11,11 +11,12 @@ module.exports = class RecordController {
     static job;
 
     static start() {
-        if (!this.isRecording) {
+        if (!RecordController.isRecording) {
             const ffmpegCommand = `ffmpeg -i "${RecordController.job.channelUrl}" -c copy "${RecordController.job.fileName}"`;
             LogController.info("RECORD", "START");
-            this.recordProcess = exec(ffmpegCommand, async (error, stdout, stderr) => {
-                this.isRecording = false;
+            RecordController.recordProcess = exec(ffmpegCommand, async (error, stdout, stderr) => {
+                RecordController.isRecording = false;
+                RecordController.recordProcess = undefined;
                 if (error) {
                     await DbController.updateJob(RecordController.job.id, {
                         ...await DbController.getJob(RecordController.job.id),
@@ -40,21 +41,23 @@ module.exports = class RecordController {
                 });
                 LogController.info("RECORD", "FINISH");
             });
-            this.isRecording = true;
+            RecordController.isRecording = true;
         }
     };
 
     static stop() {
-        if (this.isRecording) {
-            if (this.recordProcess && isRunning(this.recordProcess.pid)) {
-                process.kill(this.recordProcess.pid, 'SIGTERM');
+        if (RecordController.isRecording) {
+            if (RecordController.recordProcess && isRunning(RecordController.recordProcess.pid)) {
+                if (RecordController.recordProcess.kill()) {
+                    RecordController.isRecording = false;
+                    RecordController.recordProcess = undefined;
+                    LogController.info("RECORD", "STOPPED");
+                }
             }
-            LogController.info("RECORD", "STOPPED");
-            this.isRecording = false;
         }
     };
 
     static isRunning() {
-        return this.isRecording && this.recordProcess && isRunning(this.recordProcess.pid);
+        return RecordController.isRecording && RecordController.recordProcess && isRunning(RecordController.recordProcess.pid);
     }
 }

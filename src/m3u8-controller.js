@@ -19,7 +19,7 @@ module.exports = class M3U8Controller {
         const parser = new M3U8FileParser();
         parser.read(content);
         const playlist = parser.getResult();
-        const filter = playlist.segments.filter(item => item.inf.title.includes(channelName));
+        const filter = playlist.segments.filter(item => item.inf.title.toLowerCase().includes(channelName.toLowerCase()));
         return filter.length === 0 ? undefined : filter[0];
     }
 
