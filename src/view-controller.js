@@ -55,9 +55,9 @@ module.exports = class ViewController {
         res.redirect("/");
     }
 
-    static async clearJobs(req, res) {
-        await DbController.clearJobs();
-        LogController.info("JOB", "DELETE_ALL");
+    static async clearFinishedJobs(req, res) {
+        await DbController.clearFinishedJobs();
+        LogController.info("JOB", "DELETE_FINISHED");
         res.redirect("/");
     }
 }

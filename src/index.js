@@ -33,7 +33,7 @@ app.post('/stop', ViewController.stop);
 
 app.post('/addJob', ViewController.addJob);
 app.post('/deleteJob', ViewController.deleteJob);
-app.post('/clearJobs', ViewController.clearJobs);
+app.post('/clearFinishedJobs', ViewController.clearFinishedJobs);
 
 app.listen(3000, () => {
     LogController.info("SERVER", "RUNNING", {address: "http://localhost:3000"});

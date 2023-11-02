@@ -40,15 +40,16 @@ module.exports = class JobController {
                     stdout: RecordController.recordProcess.stdoutLog, stderr: RecordController.recordProcess.stderrLog
                 });
 
-                RecordController.isRecording = false;
-                RecordController.recordProcess = undefined;
-
                 await DbController.updateJob(RecordController.job.id, {
                     status: RecordController.job.count > maxRetryCount - 2,
                     record: "ERROR",
                     fileName: getFileName(RecordController.job.channelName),
                     count: (RecordController.job.count || 0) + 1
                 });
+
+                RecordController.isRecording = false;
+                RecordController.recordProcess = undefined;
+                RecordController.job = undefined;
             }
         }
     }

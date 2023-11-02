@@ -1,10 +1,8 @@
 const child_process = require('child_process');
 const isRunning = require('is-running');
-const fs = require("fs");
 
 const LogController = require("./log-controller");
 const DbController = require("./db-controller");
-const {downloadFolder} = require("./contants");
 
 module.exports = class RecordController {
 
@@ -36,10 +34,13 @@ module.exports = class RecordController {
 
     static async stop() {
         if (!!RecordController.recordProcess && RecordController.recordProcess.kill('SIGTERM')) {
+            LogController.info("RECORD", "FINISHED");
+
+            await DbController.updateJob(RecordController.job.id, {status: true, record: "SUCCESS"});
+
             RecordController.isRecording = false;
             RecordController.recordProcess = undefined;
-            LogController.info("RECORD", "FINISHED");
-            await DbController.updateJob(RecordController.job.id, {status: true, record: "SUCCESS"});
+            RecordController.job = undefined;
         }
     }
 
