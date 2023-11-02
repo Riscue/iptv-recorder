@@ -7,8 +7,8 @@ const {maxRetryCount} = require("./contants");
 module.exports = class JobController {
 
     static registerJobs() {
-        setInterval(JobController.checkTimeAndAct, 10 * 1000);
-        setInterval(JobController.checkRecordStatus, 1000);
+        setInterval(JobController.checkTimeAndAct, 1 * 60 * 1000);
+        setInterval(JobController.checkRecordStatus, 10 * 1000);
     }
 
     static async checkTimeAndAct() {
@@ -37,8 +37,7 @@ module.exports = class JobController {
                 }
             } else {
                 LogController.error("RECORD", "UNEXPECTED", {
-                    stdout: RecordController.recordProcess.stdoutLog,
-                    stderr: RecordController.recordProcess.stderrLog
+                    stdout: RecordController.recordProcess.stdoutLog, stderr: RecordController.recordProcess.stderrLog
                 });
 
                 RecordController.isRecording = false;

@@ -8,7 +8,7 @@ html(lang='en')
         if status
             p(style="color: green") Recording is ongoing.
             form(action="/stop", method="POST")
-              input(type="submit", value='Durdur')
+                input(type="submit", value='Durdur')
         else
             p Not recording.
 
@@ -53,13 +53,13 @@ html(lang='en')
                     td= job.record
                     td= job.count
                     td
-                      if !job.status
-                        form(action="/deleteJob", method="POST")
-                          input(name="id", type="hidden", value=job.id)
-                          input(type="submit", value='Sil')
+                        if !job.status
+                            form(action="/deleteJob", method="POST")
+                                input(name="id", type="hidden", value=job.id)
+                                input(type="submit", value='Sil')
 
     form(action="/clearJobs", method="POST")
-          input(type="submit", value='Hepsini temizle')
+        input(type="submit", value='Hepsini temizle')
 
 style.
     th {
@@ -75,10 +75,10 @@ script.
 
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    startDate.min = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
-    endDate.min = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
+    startDate.min = now.toISOString().substring(0, (now.toISOString().indexOf("T") | 0) + 6 | 0);
+    endDate.min = now.toISOString().substring(0, (now.toISOString().indexOf("T") | 0) + 6 | 0);
 
-    now.setMinutes(now.getMinutes());
-    startDate.value = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
-    now.setMinutes(now.getMinutes() + 1);
-    endDate.value = now.toISOString().substring(0, (now.toISOString().indexOf("T")|0) + 6|0);
+    now.setMinutes(now.getMinutes() + 10);
+    startDate.value = now.toISOString().substring(0, (now.toISOString().indexOf("T") | 0) + 6 | 0);
+    now.setMinutes(now.getMinutes() + 120);
+    endDate.value = now.toISOString().substring(0, (now.toISOString().indexOf("T") | 0) + 6 | 0);
