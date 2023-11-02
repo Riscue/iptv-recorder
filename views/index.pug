@@ -53,9 +53,10 @@ html(lang='en')
                     td= job.record
                     td= job.count
                     td
-                      form(action="/deleteJob", method="POST")
-                        input(name="id", type="hidden", value=job.id)
-                        input(type="submit", value='Sil')
+                      if !job.status
+                        form(action="/deleteJob", method="POST")
+                          input(name="id", type="hidden", value=job.id)
+                          input(type="submit", value='Sil')
 
     form(action="/clearJobs", method="POST")
           input(type="submit", value='Hepsini temizle')

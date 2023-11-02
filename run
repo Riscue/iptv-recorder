@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+docker build -t iptv-recorder:test . -f docker/Dockerfile
+
+docker run -it --rm -e TZ=Europe/Istanbul -v /tmp/iptv:/tmp -v /tmp/iptv:/data -p 3000:3000 iptv-recorder:test
