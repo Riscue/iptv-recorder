@@ -3,15 +3,18 @@ const fs = require('fs');
 const M3U8FileParser = require('m3u8-file-parser');
 
 const {playlistUrl, playlistFile} = require("./contants");
+const LogController = require("./log-controller");
 
 module.exports = class M3U8Controller {
 
     static async prepare() {
         if (fs.existsSync(playlistFile)) {
+            LogController.info("M3U8", "EXISTS");
             return;
         }
 
         await M3U8Controller.download(playlistUrl, playlistFile);
+        LogController.info("M3U8", "DOWNLOADED");
     }
 
     static find(channelName) {

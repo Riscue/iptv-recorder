@@ -39,9 +39,9 @@ html(lang='en')
                 th Channel Name
                 th Start Date
                 th End Date
-                th Status
+                th Finished
                 th Record Status
-                th Log
+                th Retry Count
                 th
 
             each job in jobs
@@ -51,7 +51,7 @@ html(lang='en')
                     td= new Date(job.endTimestamp).toLocaleString("tr-TR", {hour: "numeric", minute: "numeric", day: "numeric", month: "numeric", year: "numeric"})
                     td= job.status
                     td= job.record
-                    td= job.log
+                    td= job.count
                     td
                       form(action="/deleteJob", method="POST")
                         input(name="id", type="hidden", value=job.id)

@@ -1,6 +1,7 @@
 module.exports = {
     playlistUrl: "https://riscue.xyz/iptv.php",
-    playlistFile: "/tmp/playlist.m3u8",
-    downloadFolder: "/data",
-    dbFile: "/tmp/db.json",
+    playlistFile: "/data/playlist.m3u8",
+    downloadFolder: "/data/download",
+    dbFile: "/data/db.json",
+    maxRetryCount: 5,
 }

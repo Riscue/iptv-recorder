@@ -1,8 +1,8 @@
-const moment = require('moment/moment');
-
 const RecordController = require("./record-controller");
 const LogController = require("./log-controller");
 const DbController = require("./db-controller");
+const {getFileName} = require("./utils");
+const {maxRetryCount} = require("./contants");
 
 module.exports = class JobController {
 
@@ -12,7 +12,7 @@ module.exports = class JobController {
     }
 
     static async checkTimeAndAct() {
-        if (RecordController.isRecording && RecordController.recordProcess) {
+        if (RecordController.isRecording && !!RecordController.recordProcess) {
             return;
         }
 
@@ -23,26 +23,33 @@ module.exports = class JobController {
 
         const job = jobs.sort((a, b) => a.startTimestamp - b.endTimestamp)[0];
 
-        const now = new Date();
-        if (now > job.startTimestamp) {
-            job.status = true;
-            await DbController.updateJob(job.id, job);
-            RecordController.job = job;
+        if (new Date() > job.startTimestamp) {
+            RecordController.job = await DbController.updateJob(job.id, {status: true});
             RecordController.start();
         }
     }
 
-    static checkRecordStatus() {
-        if (RecordController.isRecording && RecordController.recordProcess) {
+    static async checkRecordStatus() {
+        if (RecordController.isRecording && !!RecordController.recordProcess) {
             if (RecordController.isRunning()) {
-                const now = new Date();
-                if (now > RecordController.job.endDate) {
-                    RecordController.stop();
+                if (new Date() > RecordController.job.endTimestamp) {
+                    await RecordController.stop();
                 }
             } else {
-                LogController.error("RECORD", "UNEXPECTED");
+                LogController.error("RECORD", "UNEXPECTED", {
+                    stdout: RecordController.recordProcess.stdoutLog,
+                    stderr: RecordController.recordProcess.stderrLog
+                });
+
                 RecordController.isRecording = false;
                 RecordController.recordProcess = undefined;
+
+                await DbController.updateJob(RecordController.job.id, {
+                    status: RecordController.job.count > maxRetryCount - 2,
+                    record: "ERROR",
+                    fileName: getFileName(RecordController.job.channelName),
+                    count: (RecordController.job.count || 0) + 1
+                });
             }
         }
     }

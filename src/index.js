@@ -3,10 +3,11 @@ const bodyParser = require('body-parser');
 const process = require('process')
 
 const ViewController = require("./view-controller");
-const RestController = require("./rest-controller");
 const LogController = require("./log-controller");
 const JobController = require("./job-controller");
 const M3U8Controller = require("./m3u8-controller");
+const fs = require("fs");
+const {downloadFolder} = require("./contants");
 
 const signals = ["SIGTERM", "SIGINT"];
 const shutdown = async (signal) => {
@@ -17,6 +18,7 @@ signals.forEach((signal) => {
     process.on(signal, shutdown);
 });
 
+fs.mkdirSync(downloadFolder, {recursive: true});
 M3U8Controller.prepare();
 
 JobController.registerJobs();
@@ -27,11 +29,11 @@ app.set('view engine', 'pug')
 
 app.get('/', ViewController.index);
 
-app.post('/stop', RestController.stop);
+app.post('/stop', ViewController.stop);
 
-app.post('/addJob', RestController.addJob);
-app.post('/deleteJob', RestController.deleteJob);
-app.post('/clearJobs', RestController.clearJobs);
+app.post('/addJob', ViewController.addJob);
+app.post('/deleteJob', ViewController.deleteJob);
+app.post('/clearJobs', ViewController.clearJobs);
 
 app.listen(3000, () => {
     LogController.info("SERVER", "RUNNING", {address: "http://localhost:3000"});

@@ -8,16 +8,13 @@ module.exports = class DbController {
 
     static JOB_TABLE = "job";
 
-    static async clearJobs() {
-        return await db.delete(`/${this.JOB_TABLE}`);
+    static async getIndex(id) {
+        return await db.getIndex(`/${this.JOB_TABLE}`, id);
     }
 
     static async getJob(id) {
-        return await db.getData(`/${this.JOB_TABLE}[${await db.getIndex(`/${this.JOB_TABLE}`, id)}]`);
-    }
-
-    static async deleteJob(id) {
-        return await db.delete(`/${this.JOB_TABLE}[${await db.getIndex(`/${this.JOB_TABLE}`, id)}]`);
+        const index = await DbController.getIndex(`/${this.JOB_TABLE}`, id);
+        return await db.getData(`/${this.JOB_TABLE}[${index}]`);
     }
 
     static async insertJob(job) {
@@ -25,8 +22,21 @@ module.exports = class DbController {
         return await db.push(`/${this.JOB_TABLE}[]`, job);
     }
 
-    static async updateJob(id, job) {
-        return await db.push(`/${this.JOB_TABLE}[${await db.getIndex(`/${this.JOB_TABLE}`, id)}]`, job, true);
+    static async updateJob(id, patch) {
+        const job = await DbController.getJob(id);
+        const index = await DbController.getIndex(`/${this.JOB_TABLE}`, id);
+        const newJob = {...job, ...patch};
+        await db.push(`/${this.JOB_TABLE}[${index}]`, newJob, true);
+        return newJob;
+    }
+
+    static async deleteJob(id) {
+        const index = await DbController.getIndex(`/${this.JOB_TABLE}`, id);
+        return await db.delete(`/${this.JOB_TABLE}[${index}]`);
+    }
+
+    static async clearJobs() {
+        return await db.delete(`/${this.JOB_TABLE}`);
     }
 
     static async getJobs() {

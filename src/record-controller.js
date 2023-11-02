@@ -1,8 +1,10 @@
-const {exec} = require('child_process');
+const child_process = require('child_process');
 const isRunning = require('is-running');
+const fs = require("fs");
 
 const LogController = require("./log-controller");
 const DbController = require("./db-controller");
+const {downloadFolder} = require("./contants");
 
 module.exports = class RecordController {
 
@@ -12,52 +14,36 @@ module.exports = class RecordController {
 
     static start() {
         if (!RecordController.isRecording) {
-            const ffmpegCommand = `ffmpeg -i "${RecordController.job.channelUrl}" -c copy "${RecordController.job.fileName}"`;
             LogController.info("RECORD", "START");
-            RecordController.recordProcess = exec(ffmpegCommand, async (error, stdout, stderr) => {
-                RecordController.isRecording = false;
-                RecordController.recordProcess = undefined;
-                if (error) {
-                    await DbController.updateJob(RecordController.job.id, {
-                        ...await DbController.getJob(RecordController.job.id),
-                        record: "ERROR", log: error.message
-                    });
-                    LogController.error("RECORD", "ERROR");
-                    return;
-                }
-                if (stderr) {
-                    await DbController.updateJob(RecordController.job.id, {
-                        ...await DbController.getJob(RecordController.job.id),
-                        record: "STDERR",
-                        log: stderr
-                    });
-                    LogController.error("RECORD", "STDERR");
-                    return;
-                }
-                await DbController.updateJob(RecordController.job.id, {
-                    ...await DbController.getJob(RecordController.job.id),
-                    record: "FINISH",
-                    log: stdout
-                });
-                LogController.info("RECORD", "FINISH");
-            });
+            RecordController.recordProcess = RecordController.runCommand("ffmpeg", ["-i", `${RecordController.job.channelUrl}`, "-c", "copy", `${RecordController.job.fileName}`]);
             RecordController.isRecording = true;
         }
-    };
+    }
 
-    static stop() {
-        if (RecordController.isRecording) {
-            if (RecordController.recordProcess && isRunning(RecordController.recordProcess.pid)) {
-                if (RecordController.recordProcess.kill()) {
-                    RecordController.isRecording = false;
-                    RecordController.recordProcess = undefined;
-                    LogController.info("RECORD", "STOPPED");
-                }
-            }
+    static runCommand(command, args) {
+        const child = child_process.spawn(command, args);
+
+        child.stdoutLog = "";
+        child.stdout.setEncoding('utf8');
+        child.stdout.on('data', (data) => child.stdoutLog += data.toString());
+
+        child.stderrLog = "";
+        child.stderr.setEncoding('utf8');
+        child.stderr.on('data', (data) => child.stderrLog += data.toString());
+
+        return child;
+    }
+
+    static async stop() {
+        if (!!RecordController.recordProcess && RecordController.recordProcess.kill('SIGTERM')) {
+            RecordController.isRecording = false;
+            RecordController.recordProcess = undefined;
+            LogController.info("RECORD", "FINISHED");
+            await DbController.updateJob(RecordController.job.id, {status: true, record: "SUCCESS"});
         }
-    };
+    }
 
     static isRunning() {
-        return RecordController.isRecording && RecordController.recordProcess && isRunning(RecordController.recordProcess.pid);
+        return RecordController.isRecording && !!RecordController.recordProcess && isRunning(RecordController.recordProcess.pid);
     }
 }
