@@ -13,9 +13,10 @@ module.exports = class ViewController {
     static async index(req, res) {
         const jobs = await DbController.getJobs();
         for (let job of jobs) {
-            if (job.status && fs.existsSync(job.fileName)) {
-                job.fileSize = filesize.filesize(fs.statSync(job.fileName).size, {standard: "iec", round: 2});
-            }
+            job.fileSize =
+                job.status && fs.existsSync(job.fileName) ?
+                    filesize.filesize(fs.statSync(job.fileName).size, {standard: "iec", round: 2}) :
+                    undefined;
         }
 
         const response = {
