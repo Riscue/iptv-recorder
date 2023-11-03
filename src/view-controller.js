@@ -1,4 +1,6 @@
 const moment = require("moment");
+const fs = require("fs");
+const filesize = require("filesize");
 
 const RecordController = require("./record-controller");
 const DbController = require("./db-controller");
@@ -9,10 +11,17 @@ const {getFileName} = require("./utils");
 module.exports = class ViewController {
 
     static async index(req, res) {
+        const jobs = await DbController.getJobs();
+        for (let job of jobs) {
+            if (job.status && fs.existsSync(job.fileName)) {
+                job.fileSize = filesize.filesize(fs.statSync(job.fileName).size, {standard: "iec", round: 2});
+            }
+        }
+
         const response = {
             title: "IPTV Recorder Status Page",
             status: RecordController.isRunning(),
-            jobs: await DbController.getJobs()
+            jobs: jobs
         };
         res.render('index', response);
     }

@@ -4,13 +4,12 @@ html(lang='en')
     head
         title= title
     body
-        h1 Recording Status
         if status
-            p(style="color: green") Recording is ongoing.
+            h1(style="color: green") Recording is ongoing.
             form(action="/stop", method="POST")
                 input(type="submit", value='Durdur')
         else
-            p Not recording.
+            h1 Not recording.
 
         form(action="/addJob", method="POST")
             table.table
@@ -58,8 +57,9 @@ html(lang='en')
                                 input(name="id", type="hidden", value=job.id)
                                 input(type="submit", value='Sil')
 
-    form(action="/clearFinishedJobs", method="POST")
-        input(type="submit", value='Bitenleri temizle')
+    if !status
+        form(action="/clearFinishedJobs", method="POST")
+            input(type="submit", value='Bitenleri temizle')
 
 style.
     th {

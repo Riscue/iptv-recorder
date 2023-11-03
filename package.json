@@ -12,6 +12,7 @@
     "axios": "^1.6.0",
     "body-parser": "^1.20.2",
     "express": "^4.17.1",
+    "filesize": "^10.1.0",
     "is-running": "^2.1.0",
     "m3u8-file-parser": "^0.2.4",
     "moment": "^2.29.4",
