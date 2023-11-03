@@ -41,6 +41,7 @@ html(lang='en')
                 th Finished
                 th Record Status
                 th Retry Count
+                th Size
                 th
 
             each job in jobs
@@ -51,6 +52,7 @@ html(lang='en')
                     td= job.status
                     td= job.record
                     td= job.count
+                    td= job.size
                     td
                         if !job.status
                             form(action="/deleteJob", method="POST")
