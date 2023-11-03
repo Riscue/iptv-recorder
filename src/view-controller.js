@@ -47,7 +47,7 @@ module.exports = class ViewController {
         const job = {
             channelName: m3u8.inf.title,
             channelUrl: m3u8.url,
-            fileName: getFileName(m3u8.inf.title),
+            fileName: getFileName(m3u8.inf.title, moment(req.body.startDate)),
             startTimestamp: moment(req.body.startDate),
             endTimestamp: moment(req.body.endDate),
             status: false

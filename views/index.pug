@@ -52,7 +52,7 @@ html(lang='en')
                     td= job.status
                     td= job.record
                     td= job.count
-                    td= job.size
+                    td= job.fileSize
                     td
                         if !job.status
                             form(action="/deleteJob", method="POST")

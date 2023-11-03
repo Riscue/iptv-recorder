@@ -3,6 +3,7 @@ const LogController = require("./log-controller");
 const DbController = require("./db-controller");
 const {getFileName} = require("./utils");
 const {maxRetryCount} = require("./contants");
+const moment = require("moment/moment");
 
 module.exports = class JobController {
 
@@ -43,7 +44,7 @@ module.exports = class JobController {
                 await DbController.updateJob(RecordController.job.id, {
                     status: RecordController.job.count > maxRetryCount - 2,
                     record: "ERROR",
-                    fileName: getFileName(RecordController.job.channelName),
+                    fileName: getFileName(RecordController.job.channelName, moment(new Date())),
                     count: (RecordController.job.count || 0) + 1
                 });
 
