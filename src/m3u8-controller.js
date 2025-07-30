@@ -9,8 +9,12 @@ module.exports = class M3U8Controller {
 
     static async prepare() {
         if (fs.existsSync(playlistFile)) {
-            LogController.info("M3U8", "EXISTS");
-            return;
+            if (Date.now() - fs.statSync(playlistFile).mtimeMs <= 24 * 60 * 60 * 1000) {
+                LogController.info("M3U8", "EXISTS");
+                return;
+            } else {
+                LogController.info("M3U8", "OLD");
+            }
         }
 
         await M3U8Controller.download(playlistUrl, playlistFile);
