@@ -17,8 +17,15 @@ module.exports = class M3U8Controller {
             }
         }
 
-        await M3U8Controller.download(playlistUrl, playlistFile);
-        LogController.info("M3U8", "DOWNLOADED");
+        await M3U8Controller.download(playlistUrl, playlistFile)
+            .then(data => {
+                LogController.info("M3U8", "DOWNLOADED")
+            })
+            .catch((err) => {
+                LogController.error("M3U8", "FAILED")
+                fs.unlinkSync(playlistFile);
+                throw err;
+            });
     }
 
     static find(channelName) {

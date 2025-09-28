@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const process = require('process')
+const process = require('process');
+const favicon = require('serve-favicon');
+const path = require('path');
 
 const ViewController = require("./view-controller");
 const LogController = require("./log-controller");
@@ -26,6 +28,7 @@ JobController.registerJobs();
 const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'pug')
+app.use(favicon(path.join(__dirname, 'favicon.png')))
 
 app.get('/', ViewController.index);
 
