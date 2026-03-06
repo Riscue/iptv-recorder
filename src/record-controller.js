@@ -29,9 +29,10 @@ module.exports = class RecordController {
                 "-i", `${RecordController.job.channelUrl}`,
                 "-c", "copy",
                 "-f", "hls",
-                "-hls_time", "5",
+                "-hls_time", "15",
                 "-hls_list_size", "0",
-                "-hls_segment_filename", path.join(segmentDir, "%04d.ts"),
+                "-hls_segment_filename", path.join(segmentDir, "%08d.ts"),
+                "-hls_base_url", `${parsedPath.name}/`,
                 m3u8Path
             ]);
 
