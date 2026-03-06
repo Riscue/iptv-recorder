@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const child_process = require('child_process');
 const isRunning = require('is-running');
 
@@ -13,12 +15,26 @@ module.exports = class RecordController {
     static start() {
         if (!RecordController.isRecording) {
             LogController.info("RECORD", "START");
+
+            const m3u8Path = RecordController.job.fileName;
+            const parsedPath = path.parse(m3u8Path);
+
+            const segmentDir = path.join(parsedPath.dir, parsedPath.name);
+
+            if (!fs.existsSync(segmentDir)) {
+                fs.mkdirSync(segmentDir, {recursive: true});
+            }
+
             RecordController.recordProcess = RecordController.runCommand("ffmpeg", [
                 "-i", `${RecordController.job.channelUrl}`,
                 "-c", "copy",
-                "-f", "mpegts",
-                `${RecordController.job.fileName}`
+                "-f", "hls",
+                "-hls_time", "5",
+                "-hls_list_size", "0",
+                "-hls_segment_filename", path.join(segmentDir, "%04d.ts"),
+                m3u8Path
             ]);
+
             RecordController.isRecording = true;
         }
     }
