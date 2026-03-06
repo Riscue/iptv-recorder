@@ -13,7 +13,12 @@ module.exports = class RecordController {
     static start() {
         if (!RecordController.isRecording) {
             LogController.info("RECORD", "START");
-            RecordController.recordProcess = RecordController.runCommand("ffmpeg", ["-i", `${RecordController.job.channelUrl}`, "-c", "copy", `${RecordController.job.fileName}`]);
+            RecordController.recordProcess = RecordController.runCommand("ffmpeg", [
+                "-i", `${RecordController.job.channelUrl}`,
+                "-c", "copy",
+                "-f", "mpegts",
+                `${RecordController.job.fileName}`
+            ]);
             RecordController.isRecording = true;
         }
     }
