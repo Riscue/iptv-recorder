@@ -18,8 +18,12 @@ module.exports = class DbController {
     }
 
     static async getJob(id) {
-        const index = await DbController.getIndex(id);
-        return await db.getData(`/${this.JOB_TABLE}[${index}]`);
+        try {
+            const index = await DbController.getIndex(id);
+            return await db.getData(`/${this.JOB_TABLE}[${index}]`);
+        } catch (e) {
+            return null;
+        }
     }
 
     static async insertJob(job) {

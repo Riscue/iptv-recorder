@@ -25,23 +25,42 @@ module.exports = class RecordController {
                 fs.mkdirSync(segmentDir, {recursive: true});
             }
 
-            RecordController.recordProcess = RecordController.runCommand("ffmpeg", [
-                "-i", `${RecordController.job.channelUrl}`,
-                "-c", "copy",
-                "-f", "hls",
-                "-hls_time", "15",
-                "-hls_list_size", "0",
-                "-hls_segment_filename", path.join(segmentDir, "%08d.ts"),
-                "-hls_base_url", `${parsedPath.name}/`,
-                m3u8Path
-            ]);
+            try {
+                RecordController.recordProcess = RecordController.runCommand("ffmpeg", [
+                    "-i", `${RecordController.job.channelUrl}`,
+                    "-c", "copy",
+                    "-f", "hls",
+                    "-hls_time", "10",
+                    "-hls_list_size", "0",
+                    "-hls_flags", "delete_segments+append_list",
+                    "-hls_segment_filename", path.join(segmentDir, "%08d.ts"),
+                    "-hls_base_url", `${parsedPath.name}/`,
+                    m3u8Path
+                ]);
 
-            RecordController.isRecording = true;
+                // Listen for process exit
+                RecordController.recordProcess.on('exit', (code, signal) => {
+                    if (RecordController.isRecording) {
+                        LogController.info("RECORD", "EXIT", {code, signal});
+                    }
+                });
+
+                RecordController.isRecording = true;
+            } catch (err) {
+                LogController.error("RECORD", "START_ERROR", {error: err.message});
+                RecordController.isRecording = false;
+                RecordController.recordProcess = undefined;
+            }
         }
     }
 
     static runCommand(command, args) {
         const child = child_process.spawn(command, args);
+
+        // Handle spawn errors (e.g., ffmpeg not found)
+        child.on('error', (err) => {
+            LogController.error("RECORD", "SPAWN_ERROR", {error: err.message, code: err.code});
+        });
 
         child.stdoutLog = "";
         child.stdout.setEncoding('utf8');
@@ -54,16 +73,72 @@ module.exports = class RecordController {
         return child;
     }
 
+    static getRecordingSize(job) {
+        // Get the segment directory
+        const parsedPath = path.parse(job.fileName);
+        const segmentDir = path.join(parsedPath.dir, parsedPath.name);
+
+        if (!fs.existsSync(segmentDir)) {
+            return 0;
+        }
+
+        // Calculate total size of all .ts files in segment directory
+        let totalSize = 0;
+        try {
+            const files = fs.readdirSync(segmentDir);
+            for (const file of files) {
+                if (file.endsWith('.ts')) {
+                    const filePath = path.join(segmentDir, file);
+                    if (fs.existsSync(filePath)) {
+                        totalSize += fs.statSync(filePath).size;
+                    }
+                }
+            }
+        } catch (e) {
+            LogController.error("RECORD", "SIZE_CHECK_ERROR", {error: e.message});
+        }
+
+        return totalSize;
+    }
+
     static async stop() {
         if (!!RecordController.recordProcess && RecordController.recordProcess.kill('SIGTERM')) {
             LogController.info("RECORD", "FINISHED");
 
-            await DbController.updateJob(RecordController.job.id, {status: true, record: "SUCCESS"});
+            const job = RecordController.job;
+
+            // Check if recording was successful by checking segment files size
+            let recordStatus = "SUCCESS";
+            const recordingSize = RecordController.getRecordingSize(job);
+            const recordingSizeKB = recordingSize / 1024;
+
+            if (recordingSizeKB < 100) {
+                // Less than 100KB means recording probably failed
+                recordStatus = "ERROR";
+                LogController.error("RECORD", "RECORDING_TOO_SMALL", {
+                    channel: job.channelName,
+                    segmentDir: path.join(path.parse(job.fileName).dir, path.parse(job.fileName).name),
+                    size: recordingSizeKB.toFixed(2) + ' KB'
+                });
+            } else {
+                LogController.info("RECORD", "SIZE_OK", {
+                    channel: job.channelName,
+                    size: (recordingSizeKB / 1024).toFixed(2) + ' MB'
+                });
+            }
+
+            await DbController.updateJob(job.id, {status: true, record: recordStatus});
+
+            // Update job object with new record status
+            job.record = recordStatus;
 
             RecordController.isRecording = false;
             RecordController.recordProcess = undefined;
             RecordController.job = undefined;
+
+            return job;
         }
+        return null;
     }
 
     static isRunning() {

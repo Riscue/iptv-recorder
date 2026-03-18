@@ -1,0 +1,194 @@
+doctype html
+html(lang='tr')
+    head
+        meta(charset='UTF-8')
+        meta(name='viewport', content='width=device-width, initial-scale=1.0')
+        title= title
+        script(src='https://cdn.jsdelivr.net/npm/hls.js@latest')
+        style.
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #1a1a2e;
+                color: #eee;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 20px;
+            }
+            .container {
+                max-width: 1200px;
+                width: 100%;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+                color: #00d4ff;
+                margin-bottom: 10px;
+            }
+            .live-indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 5px 15px;
+                background: #1a4d2e;
+                border-radius: 20px;
+                color: #00ff88;
+                font-size: 0.9rem;
+                margin-left: 10px;
+            }
+            .live-dot {
+                width: 10px;
+                height: 10px;
+                background: #00ff88;
+                border-radius: 50%;
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            .info {
+                text-align: center;
+                color: #aaa;
+                margin-bottom: 20px;
+            }
+            .video-wrapper {
+                width: 100%;
+                background: #000;
+                border-radius: 12px;
+                overflow: hidden;
+            }
+            video {
+                width: 100%;
+                max-height: 80vh;
+                display: block;
+            }
+            .back-link {
+                display: inline-block;
+                margin-top: 20px;
+                padding: 10px 20px;
+                background: #2d4a6f;
+                color: #eee;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: background 0.2s;
+            }
+            .back-link:hover {
+                background: #3d5a7f;
+            }
+            .status-message {
+                text-align: center;
+                padding: 20px;
+                color: #ffcc00;
+                font-size: 1.1rem;
+            }
+    body
+        .container
+            .header
+                h1= channelName
+                if isLive
+                    .live-indicator
+                        span.live-dot
+                        span CANLI
+            .info
+                if isLive
+                    | Canlı Kayıt İzleniyor
+                else
+                    | Kayıt:
+                    = new Date(startTime).toLocaleString('tr-TR')
+                    |  -
+                    = new Date(endTime).toLocaleString('tr-TR')
+            .video-wrapper
+                video#video(controls, autoplay, preload='auto', data-videopath=videoPath, data-islive=isLive ? 'true' : 'false')
+            .back-link(href='/') ← Geri Dön
+
+        script.
+            const video = document.getElementById('video');
+            const videoPath = video.dataset.videopath;
+            const isLive = video.dataset.islive === 'true';
+
+            if (isLive && Hls.isSupported()) {
+                // HLS streaming for live recordings
+                const recordingUrl = videoPath.replace('/tmp/data/download/', '/recordings/');
+
+                const hls = new Hls({
+                    // Live streaming configuration
+                    liveSyncDuration: 10,          // How far behind live edge to play (seconds)
+                    maxBufferLength: 30,            // Max buffer length (seconds)
+                    maxMaxBufferLength: 60,         // Absolute max buffer for live (seconds)
+                    liveBackBufferLength: 30,       // Back buffer for live streams
+
+                    // Manifest reloading
+                    manifestLoadingTimeOut: 10000,  // Manifest loading timeout
+                    manifestLoadingMaxRetry: 4,     // Max retry for manifest loading
+                    manifestLoadingRetryDelay: 2000, // Delay between retries
+
+                    // Segment loading
+                    fragLoadingMaxRetry: 4,         // Max retry for segment loading
+                    fragLoadingRetryDelay: 1000,    // Delay between retries
+                    fragLoadingMaxRetryTimeout: 20000, // Max timeout for segment retry
+
+                    // Debug logging
+                    debug: false
+                });
+
+                hls.loadSource(recordingUrl);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.log('Autoplay prevented:', e));
+                });
+
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        console.error('HLS Error:', data);
+                        if (data.type === 'networkError') {
+                            // Try to recover from network errors
+                            hls.startLoad();
+                        } else {
+                            document.querySelector('.video-wrapper').innerHTML =
+                                '<div class="status-message">⚠ Yayın yüklenemedi. Kayıt başlamadı veya erişilemiyor.<br>URL: ' + recordingUrl + '<br>Hata: ' + data.details + '<br>Konsolü detaylar için F12 açın.</div>';
+                        }
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari native HLS support
+                const recordingUrl = videoPath.replace('/tmp/data/download/', '/recordings/');
+                video.src = recordingUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.log('Autoplay prevented:', e));
+                });
+            } else {
+                // MP4 playback
+                video.src = '/download?file=' + encodeURIComponent(videoPath);
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.log('Autoplay prevented:', e));
+                });
+            }
+
+            // Auto-reload for live streams when recording ends
+            if (isLive) {
+                const checkStatusInterval = setInterval(() => {
+                    fetch('/api/status')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!data.recording) {
+                                // Recording stopped, reload page to show MP4
+                                clearInterval(checkStatusInterval);
+                                location.reload();
+                            }
+                        })
+                        .catch(e => console.log('Status check failed:', e));
+                }, 5000); // Check every 5 seconds
+
+                // Clear interval when page unloads
+                window.addEventListener('beforeunload', () => {
+                    clearInterval(checkStatusInterval);
+                });
+            }
