@@ -47,15 +47,6 @@ app.get('/play', ViewController.play);
 
 app.get('/api/status', ViewController.getStatus);
 
-app.get('/download', (req, res) => {
-    const filePath = req.query.file;
-    if (filePath && fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        res.status(404).send('Dosya bulunamadı');
-    }
-});
-
 app.listen(3000, () => {
     LogController.info("SERVER", "RUNNING", {address: "http://localhost:3000"});
 });

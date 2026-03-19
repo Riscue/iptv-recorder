@@ -163,7 +163,7 @@ html(lang='tr')
                 });
             } else {
                 // MP4 playback
-                video.src = '/download?file=' + encodeURIComponent(videoPath);
+                video.src = videoPath;
                 video.addEventListener('loadedmetadata', function() {
                     video.play().catch(e => console.log('Autoplay prevented:', e));
                 });
