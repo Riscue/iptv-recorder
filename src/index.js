@@ -41,7 +41,6 @@ app.post('/stop', ViewController.stop);
 app.post('/addJob', ViewController.addJob);
 app.post('/deleteJob', ViewController.deleteJob);
 app.post('/startJob', ViewController.startJob);
-app.post('/clearFinishedJobs', ViewController.clearFinishedJobs);
 
 app.get('/play', ViewController.play);
 

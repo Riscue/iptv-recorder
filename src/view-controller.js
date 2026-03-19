@@ -184,17 +184,6 @@ module.exports = class ViewController {
         }
     }
 
-    static async clearFinishedJobs(req, res) {
-        const finishedJobs = await DbController.getFinishedJobs();
-        for (const job of finishedJobs) {
-            if (!fs.existsSync(job.fileName)) {
-                await DbController.deleteJob(job.id)
-            }
-        }
-        LogController.info("JOB", "DELETE_FINISHED");
-        res.redirect("/");
-    }
-
     static async play(req, res) {
         try {
             const jobId = req.query.id;

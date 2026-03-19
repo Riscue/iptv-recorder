@@ -142,13 +142,6 @@ html(lang='tr')
                                         form.delete-form(action="/deleteJob", method="POST")
                                             input(name="id", type="hidden", value=job.id)
                                             button.delete-btn(type='submit', title='Sil') 🗑
-
-            // Bulk Actions
-            .bulk-actions
-                form(action="/clearFinishedJobs", method="POST")
-                    input(type="submit", value='🧹 Bitenleri Temizle', class='clean-btn')
-                    span.total-jobs Toplam: #{jobs.length} kayıt
-
         style.
             * {
                 box-sizing: border-box;

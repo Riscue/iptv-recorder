@@ -45,22 +45,6 @@ module.exports = class DbController {
         return await db.delete(`/${this.JOB_TABLE}[${index}]`);
     }
 
-    static async clearFinishedJobs() {
-        const finishedJobs = await DbController.getFinishedJobs();
-        if (finishedJobs.length === 0) {
-            return true;
-        }
-
-        for (const job of finishedJobs) {
-            await DbController.deleteJob(job.id);
-        }
-        return true;
-    }
-
-    static async clearJobs() {
-        return await db.delete(`/${this.JOB_TABLE}`);
-    }
-
     static async getJobs() {
         return await db.getObjectDefault(`/${this.JOB_TABLE}`, []);
     }
