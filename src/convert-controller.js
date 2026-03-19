@@ -85,7 +85,6 @@ module.exports = class ConvertController {
         ConvertController.convertProcess = require('child_process').spawn('ffmpeg', [
             '-i', m3u8Path,
             '-c', 'copy',
-            '-bsf:a', 'aac_adtstoasc',
             '-y',
             mp4Path
         ]);
