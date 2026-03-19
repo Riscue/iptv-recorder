@@ -9,7 +9,7 @@ const DbController = require("./db-controller");
 const M3U8Controller = require("./m3u8-controller");
 const LogController = require("./log-controller");
 const {getFileName} = require("./utils");
-const {playlistFile} = require("./contants");
+const {playlistFile, downloadFolder} = require("./contants");
 
 module.exports = class ViewController {
 
@@ -213,19 +213,14 @@ module.exports = class ViewController {
                 RecordController.job.id === job.id;
 
             const recordingPath = isCurrentlyRecording ? job.fileName : (job.mp4Path || null);
-
-            if (!recordingPath) {
-                return res.status(404).send('Video bulunamadı');
-            }
-
-            if (!fs.existsSync(recordingPath)) {
+            if (!recordingPath || !fs.existsSync(recordingPath)) {
                 return res.status(404).send('Video dosyası bulunamadı');
             }
 
             res.render('play', {
                 title: "Oynat - " + job.channelName,
                 channelName: job.channelName,
-                videoPath: recordingPath,
+                videoPath: `recordings/${recordingPath.replace(downloadFolder, '')}`,
                 isLive: isCurrentlyRecording,
                 startTime: job.startTimestamp,
                 endTime: job.endTimestamp

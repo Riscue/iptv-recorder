@@ -106,7 +106,6 @@ html(lang='tr')
                     = new Date(endTime).toLocaleString('tr-TR')
             .video-wrapper
                 video#video(controls, autoplay, preload='auto', data-videopath=videoPath, data-islive=isLive ? 'true' : 'false')
-            .back-link(href='/') ← Geri Dön
 
         script.
             const video = document.getElementById('video');
@@ -115,7 +114,7 @@ html(lang='tr')
 
             if (isLive && Hls.isSupported()) {
                 // HLS streaming for live recordings
-                const recordingUrl = videoPath.replace('/tmp/data/download/', '/recordings/');
+                const recordingUrl = videoPath;
 
                 const hls = new Hls({
                     // Live streaming configuration
@@ -159,7 +158,7 @@ html(lang='tr')
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 // Safari native HLS support
-                const recordingUrl = videoPath.replace('/tmp/data/download/', '/recordings/');
+                const recordingUrl = videoPath;
                 video.src = recordingUrl;
                 video.addEventListener('loadedmetadata', function() {
                     video.play().catch(e => console.log('Autoplay prevented:', e));
