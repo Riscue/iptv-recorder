@@ -97,9 +97,7 @@ html(lang='tr')
                         span.live-dot
                         span CANLI
             .info
-                if isLive
-                    | Canlı Kayıt İzleniyor
-                else
+                if !isLive
                     | Kayıt:
                     = new Date(startTime).toLocaleString('tr-TR')
                     |  -
